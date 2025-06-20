@@ -68,6 +68,20 @@
 //! Like `async`, but also enables asynchronous HTTPS support using tokio-rustls.
 //! This feature depends on both `async` and `https-rustls` features.
 //!
+//! ## `wasm`
+//!
+//! This feature enables WebAssembly support by delegating HTTP operations to
+//! JavaScript through extern C functions. When enabled, HTTP requests are
+//! performed by calling JavaScript functions that must be provided by the
+//! host environment:
+//!
+//! - `minreq_wasm_http_request`: Performs the actual HTTP request
+//! - `minreq_wasm_get_status_code`: Gets the response status code
+//! - `minreq_wasm_get_response_headers`: Gets the response headers
+//!
+//! This allows minreq to work in WebAssembly environments where native
+//! networking is not available.
+//!
 //! ## `proxy`
 //!
 //! This feature enables HTTP proxy support. See [Proxy].
@@ -237,6 +251,8 @@ mod http_url;
 mod proxy;
 mod request;
 mod response;
+#[cfg(feature = "wasm")]
+mod wasm;
 
 pub use error::*;
 #[cfg(feature = "proxy")]

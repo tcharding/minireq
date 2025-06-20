@@ -43,6 +43,7 @@ features = ["proxy", "https", "punycode"]
 default = ["std"]
 std = []
 log = ["dep:log"]
+wasm = []
 https = ["https-rustls"]
 https-rustls = ["rustls", "webpki-roots", "rustls-webpki"]
 https-rustls-probe = ["rustls", "rustls-native-certs"]
@@ -61,6 +62,10 @@ required-features = ["std"]
 [[example]]
 name = "async_hello"
 required-features = ["async"]
+
+[[example]]
+name = "wasm_example"
+required-features = ["wasm"]
 
 [lints.clippy]
 # Allow `format!("{}", x)`instead of enforcing `format!("{x}")`

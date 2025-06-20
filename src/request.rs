@@ -248,24 +248,32 @@ impl Request {
     /// [`minireq::Error`](enum.Error.html) except
     /// [`SerdeJsonError`](enum.Error.html#variant.SerdeJsonError) and
     /// [`InvalidUtf8InBody`](enum.Error.html#variant.InvalidUtf8InBody).
-    #[cfg(feature = "std")]
+    #[cfg(any(feature = "std", feature = "wasm"))]
     pub fn send(self) -> Result<Response, Error> {
         let parsed_request = ParsedRequest::new(self)?;
-        if parsed_request.url.https {
-            #[cfg(feature = "rustls")]
-            {
+
+        // WASM takes priority over std if both are enabled
+        #[cfg(feature = "wasm")]
+        return crate::wasm::send_request(parsed_request);
+
+        #[cfg(not(feature = "wasm"))] // Feature gate to shoosh the linter when wasm enabled.
+        {
+            if parsed_request.url.https {
+                #[cfg(feature = "rustls")]
+                {
+                    let is_head = parsed_request.config.method == Method::Head;
+                    let response = Connection::new(parsed_request).send_https()?;
+                    Response::create(response, is_head)
+                }
+                #[cfg(not(feature = "rustls"))]
+                {
+                    Err(Error::HttpsFeatureNotEnabled)
+                }
+            } else {
                 let is_head = parsed_request.config.method == Method::Head;
-                let response = Connection::new(parsed_request).send_https()?;
+                let response = Connection::new(parsed_request).send()?;
                 Response::create(response, is_head)
             }
-            #[cfg(not(feature = "rustls"))]
-            {
-                Err(Error::HttpsFeatureNotEnabled)
-            }
-        } else {
-            let is_head = parsed_request.config.method == Method::Head;
-            let response = Connection::new(parsed_request).send()?;
-            Response::create(response, is_head)
         }
     }
 
@@ -471,6 +479,18 @@ impl ParsedRequest {
             head.extend(body);
         }
         head
+    }
+
+    /// Returns the request body for WASM usage.
+    #[cfg(feature = "wasm")]
+    pub(crate) fn get_body(&self) -> Option<&Vec<u8>> {
+        self.config.body.as_ref()
+    }
+
+    /// Returns the request headers for WASM usage.
+    #[cfg(feature = "wasm")]
+    pub(crate) fn get_headers(&self) -> &alloc::collections::BTreeMap<String, String> {
+        &self.config.headers
     }
 
     /// Returns the redirected version of this Request, unless an
