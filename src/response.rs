@@ -1,9 +1,15 @@
-use crate::{connection::HttpStream, Error};
+#[cfg(feature = "std")]
+use crate::connection::HttpStream;
+use crate::Error;
 use alloc::collections::BTreeMap;
 use core::str;
+#[cfg(feature = "std")]
+use std::io::{self, BufReader, Bytes, Read};
 use std::io::{self, BufReader, Bytes, Read};
 
+#[cfg(feature = "std")]
 const BACKING_READ_BUFFER_LENGTH: usize = 16 * 1024;
+#[cfg(feature = "std")]
 const MAX_CONTENT_LENGTH: usize = 16 * 1024;
 
 /// An HTTP response.
@@ -13,10 +19,13 @@ const MAX_CONTENT_LENGTH: usize = 16 * 1024;
 /// # Example
 ///
 /// ```no_run
+/// # #[cfg(feature = "std")]
 /// # fn main() -> Result<(), minireq::Error> {
 /// let response = minireq::get("http://example.com").send()?;
 /// println!("{}", response.as_str()?);
 /// # Ok(()) }
+/// # #[cfg(not(feature = "std"))]
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 /// ```
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Response {
@@ -37,6 +46,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[cfg(feature = "std")]
     pub(crate) fn create(mut parent: ResponseLazy, is_head: bool) -> Result<Response, Error> {
         let mut body = Vec::new();
         if !is_head && parent.status_code != 204 && parent.status_code != 304 {
@@ -76,12 +86,14 @@ impl Response {
     /// # Example
     ///
     /// ```no_run
+    /// # #[cfg(feature = "std")]
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let url = "http://example.org/";
     /// let response = minireq::get(url).send()?;
     /// println!("{}", response.as_str()?);
-    /// # Ok(())
-    /// # }
+    /// # Ok(()) }
+    /// # #[cfg(not(feature = "std"))]
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
     /// ```
     pub fn as_str(&self) -> Result<&str, Error> {
         match str::from_utf8(&self.body) {
@@ -97,12 +109,14 @@ impl Response {
     /// # Example
     ///
     /// ```no_run
+    /// # #[cfg(feature = "std")]
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let url = "http://example.org/";
     /// let response = minireq::get(url).send()?;
     /// println!("{:?}", response.as_bytes());
-    /// # Ok(())
-    /// # }
+    /// # Ok(()) }
+    /// # #[cfg(not(feature = "std"))]
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
     /// ```
     pub fn as_bytes(&self) -> &[u8] {
         &self.body
@@ -115,14 +129,16 @@ impl Response {
     /// # Example
     ///
     /// ```no_run
+    /// # #[cfg(feature = "std")]
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let url = "http://example.org/";
     /// let response = minireq::get(url).send()?;
     /// println!("{:?}", response.into_bytes());
     /// // This would error, as into_bytes consumes the Response:
     /// // let x = response.status_code;
-    /// # Ok(())
-    /// # }
+    /// # Ok(()) }
+    /// # #[cfg(not(feature = "std"))]
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
     /// ```
     pub fn into_bytes(self) -> Vec<u8> {
         self.body
@@ -153,6 +169,7 @@ impl Response {
 /// ```no_run
 /// // This is how the normal Response works behind the scenes, and
 /// // how you might use ResponseLazy.
+/// # #[cfg(feature = "std")]
 /// # fn main() -> Result<(), minireq::Error> {
 /// let response = minireq::get("http://example.com").send_lazy()?;
 /// let mut vec = Vec::new();
@@ -163,8 +180,10 @@ impl Response {
 /// }
 /// # Ok(())
 /// # }
-///
+/// # #[cfg(not(feature = "std"))]
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 /// ```
+#[cfg(feature = "std")]
 pub struct ResponseLazy {
     /// The status code of the response, eg. 404.
     pub status_code: i32,
@@ -184,8 +203,10 @@ pub struct ResponseLazy {
     max_trailing_headers_size: Option<usize>,
 }
 
+#[cfg(feature = "std")]
 type HttpStreamBytes = Bytes<BufReader<HttpStream>>;
 
+#[cfg(feature = "std")]
 impl ResponseLazy {
     pub(crate) fn from_stream(
         stream: HttpStream,
@@ -213,6 +234,7 @@ impl ResponseLazy {
     }
 }
 
+#[cfg(feature = "std")]
 impl Iterator for ResponseLazy {
     type Item = Result<(u8, usize), Error>;
 
@@ -235,6 +257,7 @@ impl Iterator for ResponseLazy {
     }
 }
 
+#[cfg(feature = "std")]
 impl Read for ResponseLazy {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let mut index = 0;
@@ -260,6 +283,7 @@ impl Read for ResponseLazy {
     }
 }
 
+#[cfg(feature = "std")]
 fn read_until_closed(bytes: &mut HttpStreamBytes) -> Option<<ResponseLazy as Iterator>::Item> {
     if let Some(byte) = bytes.next() {
         match byte {
@@ -271,6 +295,7 @@ fn read_until_closed(bytes: &mut HttpStreamBytes) -> Option<<ResponseLazy as Ite
     }
 }
 
+#[cfg(feature = "std")]
 fn read_with_content_length(
     bytes: &mut HttpStreamBytes,
     content_length: &mut usize,
@@ -289,6 +314,7 @@ fn read_with_content_length(
     None
 }
 
+#[cfg(feature = "std")]
 fn read_trailers(
     bytes: &mut HttpStreamBytes,
     headers: &mut BTreeMap<String, String>,
@@ -308,6 +334,7 @@ fn read_trailers(
     Ok(())
 }
 
+#[cfg(feature = "std")]
 fn read_chunked(
     bytes: &mut HttpStreamBytes,
     headers: &mut BTreeMap<String, String>,
@@ -390,6 +417,7 @@ fn read_chunked(
     None
 }
 
+#[cfg(feature = "std")]
 enum HttpStreamState {
     // No Content-Length, and Transfer-Encoding != chunked, so we just
     // read unti lthe server closes the connection (this should be the
@@ -409,6 +437,7 @@ enum HttpStreamState {
 // constructors, but not in their structs, for api-cleanliness
 // reasons. (Eg. response.status_code is much cleaner than
 // response.meta.status_code or similar.)
+#[cfg(feature = "std")]
 struct ResponseMetadata {
     status_code: i32,
     reason_phrase: String,
@@ -417,6 +446,7 @@ struct ResponseMetadata {
     max_trailing_headers_size: Option<usize>,
 }
 
+#[cfg(feature = "std")]
 fn read_metadata(
     stream: &mut HttpStreamBytes,
     mut max_headers_size: Option<usize>,
@@ -476,6 +506,7 @@ fn read_metadata(
     })
 }
 
+#[cfg(feature = "std")]
 fn read_line(
     stream: &mut HttpStreamBytes,
     max_len: Option<usize>,
@@ -505,6 +536,7 @@ fn read_line(
     String::from_utf8(bytes).map_err(|_error| Error::InvalidUtf8InResponse)
 }
 
+#[cfg(feature = "std")]
 fn parse_status_line(line: &str) -> (i32, String) {
     // sample status line format
     // HTTP/1.1 200 OK
@@ -532,6 +564,7 @@ fn parse_status_line(line: &str) -> (i32, String) {
     (503, "Server did not provide a status line".to_string())
 }
 
+#[cfg(feature = "std")]
 fn parse_header(mut line: String) -> Option<(String, String)> {
     if let Some(location) = line.find(':') {
         // Trim the first character of the header if it is a space,

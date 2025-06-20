@@ -88,12 +88,15 @@
 //! or something could go wrong during the download.
 //!
 //! ```
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let response = minireq::get("http://example.com").send()?;
 //! assert!(response.as_str()?.contains("</html>"));
 //! assert_eq!(200, response.status_code);
 //! assert_eq!("OK", response.reason_phrase);
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! Note: you could change the `get` function to `head` or `put` or
@@ -106,11 +109,14 @@
 //! `send()`.
 //!
 //! ```
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let response = minireq::post("http://example.com")
 //!     .with_body("Foobar")
 //!     .send()?;
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! ## Headers (sending)
@@ -119,11 +125,14 @@
 //! `send()`.
 //!
 //! ```
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let response = minireq::get("http://example.com")
 //!     .with_header("Accept", "text/html")
 //!     .send()?;
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! ## Headers (receiving)
@@ -136,10 +145,13 @@
 //! this unifies the casings for easier `get()`ing.
 //!
 //! ```
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let response = minireq::get("http://example.com").send()?;
 //! assert!(response.headers.get("content-type").unwrap().starts_with("text/html"));
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! ## Timeouts
@@ -150,11 +162,14 @@
 //! NOTE: There is no timeout by default.
 //!
 //! ```no_run
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let response = minireq::post("http://example.com")
 //!     .with_timeout(10)
 //!     .send()?;
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! ## Proxy
@@ -167,6 +182,7 @@
 //! supported at this time.
 //!
 //! ```no_run
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! #[cfg(feature = "proxy")]
 //! {
@@ -177,6 +193,8 @@
 //!     println!("{}", response.as_str()?);
 //! }
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! # Timeouts
@@ -186,7 +204,7 @@
 //!
 //! - Use [`with_timeout`](struct.Request.html#method.with_timeout) on
 //!   your request to set the timeout per-request like so:
-//!   ```
+//!   ```text,ignore
 //!   minireq::get("/").with_timeout(8).send();
 //!   ```
 //! - Set the environment variable `MINREQ_TIMEOUT` to the desired
@@ -210,8 +228,10 @@
 
 extern crate alloc;
 
+#[cfg(feature = "std")]
 mod connection;
 mod error;
+#[cfg(feature = "std")]
 mod http_url;
 #[cfg(feature = "proxy")]
 mod proxy;
@@ -222,4 +242,6 @@ pub use error::*;
 #[cfg(feature = "proxy")]
 pub use proxy::*;
 pub use request::*;
-pub use response::*;
+pub use response::Response;
+#[cfg(feature = "std")]
+pub use response::ResponseLazy;

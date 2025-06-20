@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 extern crate minireq;
 mod setup;
 

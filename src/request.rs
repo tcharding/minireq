@@ -1,10 +1,14 @@
+#[cfg(feature = "std")]
 use crate::connection::Connection;
+#[cfg(feature = "std")]
 use crate::http_url::{HttpUrl, Port};
 #[cfg(feature = "proxy")]
 use crate::proxy::Proxy;
+#[cfg(feature = "std")]
 use crate::{Error, Response, ResponseLazy};
 use alloc::collections::BTreeMap;
 use core::fmt;
+#[cfg(feature = "std")]
 use core::fmt::Write;
 
 #[cfg(feature = "async")]
@@ -244,6 +248,7 @@ impl Request {
     /// [`minireq::Error`](enum.Error.html) except
     /// [`SerdeJsonError`](enum.Error.html#variant.SerdeJsonError) and
     /// [`InvalidUtf8InBody`](enum.Error.html#variant.InvalidUtf8InBody).
+    #[cfg(feature = "std")]
     pub fn send(self) -> Result<Response, Error> {
         let parsed_request = ParsedRequest::new(self)?;
         if parsed_request.url.https {
@@ -269,6 +274,7 @@ impl Request {
     /// # Errors
     ///
     /// See [`send`](struct.Request.html#method.send).
+    #[cfg(feature = "std")]
     pub fn send_lazy(self) -> Result<ResponseLazy, Error> {
         let parsed_request = ParsedRequest::new(self)?;
         if parsed_request.url.https {
@@ -339,12 +345,14 @@ impl Request {
     }
 }
 
+#[cfg(feature = "std")]
 pub(crate) struct ParsedRequest {
     pub(crate) url: HttpUrl,
     pub(crate) redirects: Vec<HttpUrl>,
     pub(crate) config: Request,
 }
 
+#[cfg(feature = "std")]
 impl ParsedRequest {
     #[allow(unused_mut)]
     fn new(mut config: Request) -> Result<ParsedRequest, Error> {
@@ -359,7 +367,7 @@ impl ParsedRequest {
             url.path_and_query.push_str(&config.params);
         }
 
-        #[cfg(feature = "proxy")]
+        #[cfg(all(feature = "proxy", feature = "std"))]
         // Set default proxy from environment variables
         //
         // Curl documentation: https://everything.curl.dev/usingcurl/proxies/env
@@ -473,10 +481,17 @@ impl ParsedRequest {
             let mut url = HttpUrl::parse(url, Some(&self.url)).map_err(|_| {
                 // TODO: Uncomment this for 3.0
                 // Error::InvalidProtocolInRedirect
-                Error::IoError(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "was redirected to an absolute url with an invalid protocol",
-                ))
+                #[cfg(feature = "std")]
+                {
+                    Error::IoError(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        "was redirected to an absolute url with an invalid protocol",
+                    ))
+                }
+                #[cfg(not(feature = "std"))]
+                {
+                    Error::Other("invalid protocol in redirect")
+                }
             })?;
             std::mem::swap(&mut url, &mut self.url);
             self.redirects.push(url);
@@ -560,6 +575,7 @@ pub fn patch<T: Into<URL>>(url: T) -> Request {
 }
 
 #[cfg(test)]
+#[cfg(feature = "std")]
 mod parsing_tests {
 
     use alloc::collections::BTreeMap;

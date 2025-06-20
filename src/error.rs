@@ -1,4 +1,5 @@
 use core::{fmt, str};
+#[cfg(feature = "std")]
 use std::{error, io};
 
 /// Represents an error while sending, receiving, or parsing an HTTP response.
@@ -16,6 +17,7 @@ pub enum Error {
     /// Ran into a rustls error while creating the connection.
     RustlsCreateConnection(rustls::Error),
     /// Ran into an IO problem while loading the response.
+    #[cfg(feature = "std")]
     IoError(io::Error),
     /// Couldn't parse the incoming chunk's length while receiving a
     /// response with the header `Transfer-Encoding: chunked`.
@@ -86,6 +88,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use Error::*;
         match self {
+            #[cfg(feature = "std")]
             IoError(err) => write!(f, "{}", err),
             InvalidUtf8InBody(err) => write!(f, "{}", err),
 
@@ -116,10 +119,12 @@ impl fmt::Display for Error {
     }
 }
 
+#[cfg(feature = "std")]
 impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         use Error::*;
         match self {
+            #[cfg(feature = "std")]
             IoError(err) => Some(err),
             InvalidUtf8InBody(err) => Some(err),
             #[cfg(feature = "rustls")]
@@ -129,6 +134,7 @@ impl error::Error for Error {
     }
 }
 
+#[cfg(feature = "std")]
 impl From<io::Error> for Error {
     fn from(other: io::Error) -> Error {
         Error::IoError(other)

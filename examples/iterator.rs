@@ -1,6 +1,8 @@
 //! This example demonstrates probably the most complicated part of
 //! `minireq`. Useful when making loading bars, for example.
 
+#![cfg(feature = "std")]
+
 fn main() -> Result<(), minireq::Error> {
     let mut buffer = Vec::new();
     for byte in minireq::get("http://example.com").send_lazy()? {

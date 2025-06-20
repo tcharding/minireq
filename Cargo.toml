@@ -40,18 +40,22 @@ chrono = "0.4.0"
 features = ["proxy", "https", "punycode"]
 
 [features]
+default = ["std"]
+std = []
 https = ["https-rustls"]
 https-rustls = ["rustls", "webpki-roots", "rustls-webpki"]
 https-rustls-probe = ["rustls", "rustls-native-certs"]
 proxy = ["base64"]
-async = ["tokio"]
+async = ["tokio", "std"]
 async-https = ["async", "https-rustls", "tokio-rustls"]
 
 [[example]]
 name = "hello"
+required-features = ["std"]
 
 [[example]]
 name = "iterator"
+required-features = ["std"]
 
 [[example]]
 name = "async_hello"
