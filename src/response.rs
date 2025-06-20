@@ -5,7 +5,6 @@ use alloc::collections::BTreeMap;
 use core::str;
 #[cfg(feature = "std")]
 use std::io::{self, BufReader, Bytes, Read};
-use std::io::{self, BufReader, Bytes, Read};
 
 #[cfg(feature = "std")]
 const BACKING_READ_BUFFER_LENGTH: usize = 16 * 1024;
