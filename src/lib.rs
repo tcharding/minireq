@@ -208,6 +208,8 @@
 // fixed before our MSRV gets that high.
 #![allow(clippy::io_other_error)]
 
+extern crate alloc;
+
 mod connection;
 mod error;
 mod http_url;

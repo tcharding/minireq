@@ -1,5 +1,5 @@
 use crate::{connection::HttpStream, Error};
-use std::collections::HashMap;
+use alloc::collections::BTreeMap;
 use std::io::{self, BufReader, Bytes, Read};
 use std::str;
 
@@ -26,7 +26,7 @@ pub struct Response {
     pub reason_phrase: String,
     /// The headers of the response. The header field names (the
     /// keys) are all lowercase.
-    pub headers: HashMap<String, String>,
+    pub headers: BTreeMap<String, String>,
     /// The URL of the resource returned in this response. May differ from the
     /// request URL if it was redirected or typo corrections were applied (e.g.
     /// <http://example.com?foo=bar> would be corrected to
@@ -172,7 +172,7 @@ pub struct ResponseLazy {
     pub reason_phrase: String,
     /// The headers of the response. The header field names (the
     /// keys) are all lowercase.
-    pub headers: HashMap<String, String>,
+    pub headers: BTreeMap<String, String>,
     /// The URL of the resource returned in this response. May differ from the
     /// request URL if it was redirected or typo corrections were applied (e.g.
     /// <http://example.com?foo=bar> would be corrected to
@@ -291,7 +291,7 @@ fn read_with_content_length(
 
 fn read_trailers(
     bytes: &mut HttpStreamBytes,
-    headers: &mut HashMap<String, String>,
+    headers: &mut BTreeMap<String, String>,
     mut max_headers_size: Option<usize>,
 ) -> Result<(), Error> {
     loop {
@@ -310,7 +310,7 @@ fn read_trailers(
 
 fn read_chunked(
     bytes: &mut HttpStreamBytes,
-    headers: &mut HashMap<String, String>,
+    headers: &mut BTreeMap<String, String>,
     expecting_more_chunks: &mut bool,
     chunk_length: &mut usize,
     content_length: &mut usize,
@@ -412,7 +412,7 @@ enum HttpStreamState {
 struct ResponseMetadata {
     status_code: i32,
     reason_phrase: String,
-    headers: HashMap<String, String>,
+    headers: BTreeMap<String, String>,
     state: HttpStreamState,
     max_trailing_headers_size: Option<usize>,
 }
@@ -425,7 +425,7 @@ fn read_metadata(
     let line = read_line(stream, max_status_line_len, Error::StatusLineOverflow)?;
     let (status_code, reason_phrase) = parse_status_line(&line);
 
-    let mut headers = HashMap::new();
+    let mut headers = BTreeMap::new();
     loop {
         let line = read_line(stream, max_headers_size, Error::HeadersOverflow)?;
         if line.is_empty() {

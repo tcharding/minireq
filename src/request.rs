@@ -3,7 +3,7 @@ use crate::http_url::{HttpUrl, Port};
 #[cfg(feature = "proxy")]
 use crate::proxy::Proxy;
 use crate::{Error, Response, ResponseLazy};
-use std::collections::HashMap;
+use alloc::collections::BTreeMap;
 use std::fmt;
 use std::fmt::Write;
 
@@ -78,7 +78,7 @@ pub struct Request {
     pub(crate) method: Method,
     url: URL,
     params: String,
-    headers: HashMap<String, String>,
+    headers: BTreeMap<String, String>,
     body: Option<Vec<u8>>,
     pub(crate) timeout: Option<u64>,
     pub(crate) max_headers_size: Option<usize>,
@@ -105,7 +105,7 @@ impl Request {
             method,
             url: url.into(),
             params: String::new(),
-            headers: HashMap::new(),
+            headers: BTreeMap::new(),
             body: None,
             timeout: None,
             max_headers_size: None,
@@ -562,13 +562,13 @@ pub fn patch<T: Into<URL>>(url: T) -> Request {
 #[cfg(test)]
 mod parsing_tests {
 
-    use std::collections::HashMap;
+    use alloc::collections::BTreeMap;
 
     use super::{get, ParsedRequest};
 
     #[test]
     fn test_headers() {
-        let mut headers = HashMap::new();
+        let mut headers = BTreeMap::new();
         headers.insert("foo".to_string(), "bar".to_string());
         headers.insert("foo".to_string(), "baz".to_string());
 
