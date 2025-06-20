@@ -56,6 +56,18 @@
 //! [`PunycodeFeatureNotEnabled`](enum.Error.html#variant.PunycodeFeatureNotEnabled)
 //! error.
 //!
+//! ## `async`
+//!
+//! This feature enables asynchronous HTTP requests using tokio. It provides
+//! [`send_async()`](struct.Request.html#method.send_async) and
+//! [`send_lazy_async()`](struct.Request.html#method.send_lazy_async) methods
+//! that return futures for non-blocking operation.
+//!
+//! ## `async-https`
+//!
+//! Like `async`, but also enables asynchronous HTTPS support using tokio-rustls.
+//! This feature depends on both `async` and `https-rustls` features.
+//!
 //! ## `proxy`
 //!
 //! This feature enables HTTP proxy support. See [Proxy].

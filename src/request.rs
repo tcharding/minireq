@@ -7,6 +7,9 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Write;
 
+#[cfg(feature = "async")]
+use crate::connection::AsyncConnection;
+
 /// A URL type for requests.
 pub type URL = String;
 
@@ -279,6 +282,59 @@ impl Request {
             }
         } else {
             Connection::new(parsed_request).send()
+        }
+    }
+
+    /// Sends this request to the host asynchronously.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Err` if we run into an error while sending the
+    /// request, or receiving/parsing the response. The specific error
+    /// is described in the `Err`, and it can be any
+    /// [`minreq::Error`](enum.Error.html) except
+    /// [`SerdeJsonError`](enum.Error.html#variant.SerdeJsonError) and
+    /// [`InvalidUtf8InBody`](enum.Error.html#variant.InvalidUtf8InBody).
+    #[cfg(feature = "async")]
+    pub async fn send_async(self) -> Result<Response, Error> {
+        let parsed_request = ParsedRequest::new(self)?;
+        if parsed_request.url.https {
+            #[cfg(feature = "async-https")]
+            {
+                let is_head = parsed_request.config.method == Method::Head;
+                let response = AsyncConnection::new(parsed_request).send_https().await?;
+                Response::create(response, is_head)
+            }
+            #[cfg(not(feature = "async-https"))]
+            {
+                Err(Error::HttpsFeatureNotEnabled)
+            }
+        } else {
+            let is_head = parsed_request.config.method == Method::Head;
+            let response = AsyncConnection::new(parsed_request).send().await?;
+            Response::create(response, is_head)
+        }
+    }
+
+    /// Sends this request to the host asynchronously, loaded lazily.
+    ///
+    /// # Errors
+    ///
+    /// See [`send_async`](struct.Request.html#method.send_async).
+    #[cfg(feature = "async")]
+    pub async fn send_lazy_async(self) -> Result<ResponseLazy, Error> {
+        let parsed_request = ParsedRequest::new(self)?;
+        if parsed_request.url.https {
+            #[cfg(feature = "async-https")]
+            {
+                AsyncConnection::new(parsed_request).send_https().await
+            }
+            #[cfg(not(feature = "async-https"))]
+            {
+                Err(Error::HttpsFeatureNotEnabled)
+            }
+        } else {
+            AsyncConnection::new(parsed_request).send().await
         }
     }
 }

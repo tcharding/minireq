@@ -28,6 +28,9 @@ rustls-native-certs = { version = "0.6.1", optional = true }
 webpki-roots = { version = "0.25.2", optional = true }
 rustls-webpki = { version = "0.101.0", optional = true }
 log = { version = "0.4.0" }
+# For the async feature:
+tokio = { version = "1.0", features = ["net", "time", "io-util", "rt", "rt-multi-thread", "macros"], optional = true }
+tokio-rustls = { version = "0.24", optional = true }
 
 [dev-dependencies]
 tiny_http = "0.12"
@@ -41,6 +44,8 @@ https = ["https-rustls"]
 https-rustls = ["rustls", "webpki-roots", "rustls-webpki"]
 https-rustls-probe = ["rustls", "rustls-native-certs"]
 proxy = ["base64"]
+async = ["tokio"]
+async-https = ["async", "https-rustls", "tokio-rustls"]
 
 [[example]]
 name = "hello"
@@ -48,6 +53,9 @@ name = "hello"
 [[example]]
 name = "iterator"
 
+[[example]]
+name = "async_hello"
+required-features = ["async"]
 
 [lints.clippy]
 # Allow `format!("{}", x)`instead of enforcing `format!("{x}")`

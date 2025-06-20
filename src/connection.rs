@@ -76,6 +76,60 @@ impl Read for HttpStream {
     }
 }
 
+/// An async connection to the server for sending
+/// [`Request`](struct.Request.html)s.
+#[cfg(feature = "async")]
+pub struct AsyncConnection {
+    request: ParsedRequest,
+    timeout_at: Option<Instant>,
+}
+
+#[cfg(feature = "async")]
+impl AsyncConnection {
+    /// Creates a new `AsyncConnection`.
+    pub(crate) fn new(request: ParsedRequest) -> AsyncConnection {
+        let timeout = request
+            .config
+            .timeout
+            .or_else(|| match env::var("MINREQ_TIMEOUT") {
+                Ok(t) => t.parse::<u64>().ok(),
+                Err(_) => None,
+            });
+        let timeout_at = timeout.map(|t| Instant::now() + Duration::from_secs(t));
+        AsyncConnection {
+            request,
+            timeout_at,
+        }
+    }
+
+    /// Sends the [`Request`](struct.Request.html) asynchronously using HTTPS.
+    #[cfg(feature = "async-https")]
+    pub(crate) async fn send_https(self) -> Result<ResponseLazy, Error> {
+        // Use spawn_blocking to run the sync HTTPS code in a thread pool
+        let sync_conn = Connection {
+            request: self.request,
+            timeout_at: self.timeout_at,
+        };
+
+        tokio::task::spawn_blocking(move || sync_conn.send_https())
+            .await
+            .map_err(|e| Error::IoError(io::Error::new(io::ErrorKind::Other, e)))?
+    }
+
+    /// Sends the [`Request`](struct.Request.html) asynchronously using HTTP.
+    pub(crate) async fn send(self) -> Result<ResponseLazy, Error> {
+        // Use spawn_blocking to run the sync HTTP code in a thread pool
+        let sync_conn = Connection {
+            request: self.request,
+            timeout_at: self.timeout_at,
+        };
+
+        tokio::task::spawn_blocking(move || sync_conn.send())
+            .await
+            .map_err(|e| Error::IoError(io::Error::new(io::ErrorKind::Other, e)))?
+    }
+}
+
 /// A connection to the server for sending
 /// [`Request`](struct.Request.html)s.
 pub struct Connection {

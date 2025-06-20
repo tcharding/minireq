@@ -10,9 +10,10 @@ rename it because I wanted to totally gut it and provide a crate with
 different goals. Many thanks to the original author.
 
 Simple, minimal-dependency HTTP client. Optional features for
-unicode domains (`punycode`), http proxies (`proxy`), and https with
-various TLS implementations (`https-rustls`, `https-rustls-probe`,
-and `https` which is an alias for `https-rustls`).
+unicode domains (`punycode`), http proxies (`proxy`), async support
+(`async`, `async-https`), and https with various TLS implementations
+(`https-rustls`, `https-rustls-probe`, and `https` which is an alias
+for `https-rustls`).
 
 Without any optional features, my casual testing indicates about 100
 KB additional executable size for stripped release builds using this
