@@ -1,4 +1,5 @@
-use std::{error, fmt, io, str};
+use core::{fmt, str};
+use std::{error, io};
 
 /// Represents an error while sending, receiving, or parsing an HTTP response.
 #[derive(Debug)]

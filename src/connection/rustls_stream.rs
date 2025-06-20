@@ -1,11 +1,11 @@
 //! TLS connection handling functionality when using the `rustls` crate for
 //! handling TLS.
 
+use alloc::sync::Arc;
+use core::convert::TryFrom;
 use rustls::{self, ClientConfig, ClientConnection, RootCertStore, ServerName, StreamOwned};
-use std::convert::TryFrom;
 use std::io::{self, Write};
 use std::net::TcpStream;
-use std::sync::Arc;
 #[cfg(feature = "rustls-webpki")]
 use webpki_roots::TLS_SERVER_ROOTS;
 

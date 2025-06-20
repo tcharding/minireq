@@ -4,8 +4,8 @@ use crate::http_url::{HttpUrl, Port};
 use crate::proxy::Proxy;
 use crate::{Error, Response, ResponseLazy};
 use alloc::collections::BTreeMap;
-use std::fmt;
-use std::fmt::Write;
+use core::fmt;
+use core::fmt::Write;
 
 #[cfg(feature = "async")]
 use crate::connection::AsyncConnection;

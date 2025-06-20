@@ -1,9 +1,10 @@
 use crate::request::ParsedRequest;
 use crate::{Error, Method, ResponseLazy};
+use core::time::Duration;
 use std::env;
 use std::io::{self, Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 type UnsecuredStream = TcpStream;
 

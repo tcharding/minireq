@@ -1,7 +1,7 @@
 use crate::{connection::HttpStream, Error};
 use alloc::collections::BTreeMap;
+use core::str;
 use std::io::{self, BufReader, Bytes, Read};
-use std::str;
 
 const BACKING_READ_BUFFER_LENGTH: usize = 16 * 1024;
 const MAX_CONTENT_LENGTH: usize = 16 * 1024;
