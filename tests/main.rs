@@ -15,24 +15,6 @@ fn test_https() {
 }
 
 #[test]
-#[cfg(feature = "json-using-serde")]
-fn test_json_using_serde() {
-    const JSON_SRC: &str = r#"{
-        "str": "Json test",
-        "num": 42
-    }"#;
-
-    let original_json: serde_json::Value = serde_json::from_str(JSON_SRC).unwrap();
-    let response = minireq::post(url("/echo"))
-        .with_json(&original_json)
-        .unwrap()
-        .send()
-        .unwrap();
-    let actual_json: serde_json::Value = response.json().unwrap();
-    assert_eq!(&actual_json, &original_json);
-}
-
-#[test]
 fn test_timeout_too_low() {
     setup();
     let result = minireq::get(url("/slow_a"))

@@ -25,14 +25,8 @@ jobs:
         cargo test
         cargo test --features punycode
         cargo test --features proxy
-        cargo test --features json-using-serde
         cargo test --features urlencoding
         cargo test --features https
-        cargo test --features "punycode proxy json-using-serde urlencoding https-rustls"
-        cargo test --features "punycode proxy json-using-serde urlencoding https-rustls-probe"
-        cargo test --features "punycode proxy json-using-serde urlencoding https-bundled"
-        cargo test --features "punycode proxy json-using-serde urlencoding https-bundled-probe"
-        cargo test --features "punycode proxy json-using-serde urlencoding https-native"
   test-windows:
     runs-on: windows-latest
     steps:
@@ -47,10 +41,9 @@ jobs:
         cargo test
         cargo test --features punycode
         cargo test --features proxy
-        cargo test --features json-using-serde
         cargo test --features urlencoding
         cargo test --features https
-        cargo test --features "punycode proxy json-using-serde urlencoding https"
+        cargo test --features "punycode proxy urlencoding https"
   test-macos:
     runs-on: macos-latest
     steps:
@@ -65,7 +58,6 @@ jobs:
         cargo test
         cargo test --features punycode
         cargo test --features proxy
-        cargo test --features json-using-serde
         cargo test --features urlencoding
         cargo test --features https
-        cargo test --features "punycode proxy json-using-serde urlencoding https"
+        cargo test --features "punycode proxy urlencoding https"

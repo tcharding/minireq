@@ -127,45 +127,6 @@ impl Response {
     pub fn into_bytes(self) -> Vec<u8> {
         self.body
     }
-
-    /// Converts JSON body to a `struct` using Serde.
-    ///
-    /// # Errors
-    ///
-    /// Returns
-    /// [`SerdeJsonError`](enum.Error.html#variant.SerdeJsonError) if
-    /// Serde runs into a problem, or
-    /// [`InvalidUtf8InBody`](enum.Error.html#variant.InvalidUtf8InBody)
-    /// if the body is not UTF-8.
-    ///
-    /// # Example
-    /// In case compiler cannot figure out return type you might need to declare it explicitly:
-    ///
-    /// ```no_run
-    /// use serde_json::Value;
-    ///
-    /// # fn main() -> Result<(), minireq::Error> {
-    /// # let url_to_json_resource = "http://example.org/resource.json";
-    /// // Value could be any type that implements Deserialize!
-    /// let user = minireq::get(url_to_json_resource).send()?.json::<Value>()?;
-    /// println!("User name is '{}'", user["name"]);
-    /// # Ok(())
-    /// # }
-    /// ```
-    #[cfg(feature = "json-using-serde")]
-    pub fn json<'a, T>(&'a self) -> Result<T, Error>
-    where
-        T: serde::de::Deserialize<'a>,
-    {
-        let str = match self.as_str() {
-            Ok(str) => str,
-            Err(_) => return Err(Error::InvalidUtf8InResponse),
-        };
-        match serde_json::from_str(str) {
-            Ok(json) => Ok(json),
-            Err(err) => Err(Error::SerdeJsonError(err)),
-        }
-    }
 }
 
 /// An HTTP response, which is loaded lazily.

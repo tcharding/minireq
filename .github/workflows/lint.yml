@@ -21,11 +21,11 @@ jobs:
     - name: Run rustfmt
       run: rustfmt --check src/lib.rs
     - name: Run cargo doc
-      run: cargo doc --features "punycode proxy json-using-serde https"
+      run: cargo doc --features "punycode proxy https"
     - name: Run clippy
       run: |
-        cargo clippy --all-targets --features "punycode proxy json-using-serde https-rustls" -- --no-deps -D warnings
-        cargo clippy --all-targets --features "punycode proxy json-using-serde https-rustls-probe" -- --no-deps -D warnings
-        cargo clippy --all-targets --features "punycode proxy json-using-serde https-bundled" -- --no-deps -D warnings
-        cargo clippy --all-targets --features "punycode proxy json-using-serde https-bundled-probe" -- --no-deps -D warnings
-        cargo clippy --all-targets --features "punycode proxy json-using-serde https-native" -- --no-deps -D warnings
+        cargo clippy --all-targets --features "punycode proxy https-rustls" -- --no-deps -D warnings
+        cargo clippy --all-targets --features "punycode proxy https-rustls-probe" -- --no-deps -D warnings
+        cargo clippy --all-targets --features "punycode proxy https-bundled" -- --no-deps -D warnings
+        cargo clippy --all-targets --features "punycode proxy https-bundled-probe" -- --no-deps -D warnings
+        cargo clippy --all-targets --features "punycode proxy https-native" -- --no-deps -D warnings

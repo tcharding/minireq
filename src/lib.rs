@@ -67,18 +67,6 @@
 //! [`openssl-probe`](https://crates.io/crates/openssl-probe) crate to
 //! auto-detect root certificates installed in common locations.
 //!
-//! ## `json-using-serde`
-//!
-//! This feature allows both serialize and deserialize JSON payload
-//! using the [`serde_json`](https://crates.io/crates/serde_json)
-//! crate.
-//!
-//! [`Request`](struct.Request.html) and
-//! [`Response`](struct.Response.html) expose
-//! [`with_json()`](struct.Request.html#method.with_json) and
-//! [`json()`](struct.Response.html#method.json) for constructing the
-//! struct from JSON and extracting the JSON body out, respectively.
-//!
 //! ## `punycode`
 //!
 //! This feature enables requests to non-ascii domains: the
@@ -229,11 +217,6 @@
 // std::io::Error::other was added in 1.74, so occurrences of this lint can't be
 // fixed before our MSRV gets that high.
 #![allow(clippy::io_other_error)]
-
-#[cfg(feature = "json-using-serde")]
-extern crate serde;
-#[cfg(feature = "json-using-serde")]
-extern crate serde_json;
 
 mod connection;
 mod error;
