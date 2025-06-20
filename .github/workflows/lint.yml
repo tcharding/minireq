@@ -28,4 +28,3 @@ jobs:
         cargo clippy --all-targets --features "punycode proxy https-rustls-probe" -- --no-deps -D warnings
         cargo clippy --all-targets --features "punycode proxy https-bundled" -- --no-deps -D warnings
         cargo clippy --all-targets --features "punycode proxy https-bundled-probe" -- --no-deps -D warnings
-        cargo clippy --all-targets --features "punycode proxy https-native" -- --no-deps -D warnings

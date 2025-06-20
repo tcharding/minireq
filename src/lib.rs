@@ -45,12 +45,6 @@
 //! crate to auto-detect root certificates installed in common
 //! locations.
 //!
-//! ## `https-native`
-//!
-//! Like `https`, but uses
-//! [`tls-native`](https://crates.io/crates/native-tls) instead of
-//! `rustls`.
-//!
 //! ## `https-bundled`
 //!
 //! Like `https`, but uses a statically linked copy of the OpenSSL
