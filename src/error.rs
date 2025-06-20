@@ -14,7 +14,6 @@ pub enum Error {
     #[cfg(feature = "rustls")]
     /// Ran into a rustls error while creating the connection.
     RustlsCreateConnection(rustls::Error),
-    // TODO: Add separate errors for openssl and native_tls errors as well
     /// Ran into an IO problem while loading the response.
     IoError(io::Error),
     /// Couldn't parse the incoming chunk's length while receiving a

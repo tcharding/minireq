@@ -27,9 +27,7 @@ rustls = { version = "0.21.1", optional = true }
 rustls-native-certs = { version = "0.6.1", optional = true }
 webpki-roots = { version = "0.25.2", optional = true }
 rustls-webpki = { version = "0.101.0", optional = true }
-openssl = { version = "0.10.29", optional = true }
 log = { version = "0.4.0" }
-openssl-probe = { version = "0.1", optional = true }
 
 [dev-dependencies]
 tiny_http = "0.12"
@@ -42,8 +40,6 @@ features = ["proxy", "https", "punycode"]
 https = ["https-rustls"]
 https-rustls = ["rustls", "webpki-roots", "rustls-webpki"]
 https-rustls-probe = ["rustls", "rustls-native-certs"]
-https-bundled = ["openssl/vendored"]
-https-bundled-probe = ["https-bundled", "openssl-probe"]
 proxy = ["base64"]
 
 [[example]]

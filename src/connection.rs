@@ -12,14 +12,9 @@ mod rustls_stream;
 #[cfg(feature = "rustls")]
 type SecuredStream = rustls_stream::SecuredStream;
 
-#[cfg(all(not(feature = "rustls"), feature = "openssl"))]
-mod openssl_stream;
-#[cfg(all(not(feature = "rustls"), feature = "openssl"))]
-type SecuredStream = openssl_stream::SecuredStream;
-
 pub(crate) enum HttpStream {
     Unsecured(UnsecuredStream, Option<Instant>),
-    #[cfg(any(feature = "rustls", feature = "openssl"))]
+    #[cfg(feature = "rustls")]
     Secured(Box<SecuredStream>, Option<Instant>),
 }
 
@@ -28,7 +23,7 @@ impl HttpStream {
         HttpStream::Unsecured(reader, timeout_at)
     }
 
-    #[cfg(any(feature = "rustls", feature = "openssl"))]
+    #[cfg(feature = "rustls")]
     fn create_secured(reader: SecuredStream, timeout_at: Option<Instant>) -> HttpStream {
         HttpStream::Secured(Box::new(reader), timeout_at)
     }
@@ -65,7 +60,7 @@ impl Read for HttpStream {
                 timeout(inner, *timeout_at)?;
                 inner.read(buf)
             }
-            #[cfg(any(feature = "rustls", feature = "openssl"))]
+            #[cfg(feature = "rustls")]
             HttpStream::Secured(inner, timeout_at) => {
                 timeout(inner.get_ref(), *timeout_at)?;
                 inner.read(buf)
@@ -118,15 +113,12 @@ impl Connection {
 
     /// Sends the [`Request`](struct.Request.html), consumes this
     /// connection, and returns a [`Response`](struct.Response.html).
-    #[cfg(any(feature = "rustls", feature = "openssl"))]
+    #[cfg(feature = "rustls")]
     pub(crate) fn send_https(mut self) -> Result<ResponseLazy, Error> {
         enforce_timeout(self.timeout_at, move || {
             self.request.url.host = ensure_ascii_host(self.request.url.host)?;
 
-            #[cfg(feature = "rustls")]
             let secured_stream = rustls_stream::create_secured_stream(&self)?;
-            #[cfg(all(not(feature = "rustls"), feature = "openssl"))]
-            let secured_stream = openssl_stream::create_secured_stream(&self)?;
 
             log::trace!("Reading HTTPS response from {}.", self.request.url.host);
             let response = ResponseLazy::from_stream(
@@ -231,9 +223,9 @@ fn handle_redirects(
         NextHop::Redirect(connection) => {
             let connection = connection?;
             if connection.request.url.https {
-                #[cfg(not(any(feature = "rustls", feature = "openssl")))]
+                #[cfg(not(feature = "rustls"))]
                 return Err(Error::HttpsFeatureNotEnabled);
-                #[cfg(any(feature = "rustls", feature = "openssl"))]
+                #[cfg(feature = "rustls")]
                 return connection.send_https();
             } else {
                 connection.send()

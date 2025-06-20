@@ -244,13 +244,13 @@ impl Request {
     pub fn send(self) -> Result<Response, Error> {
         let parsed_request = ParsedRequest::new(self)?;
         if parsed_request.url.https {
-            #[cfg(any(feature = "rustls", feature = "openssl"))]
+            #[cfg(feature = "rustls")]
             {
                 let is_head = parsed_request.config.method == Method::Head;
                 let response = Connection::new(parsed_request).send_https()?;
                 Response::create(response, is_head)
             }
-            #[cfg(not(any(feature = "rustls", feature = "openssl")))]
+            #[cfg(not(feature = "rustls"))]
             {
                 Err(Error::HttpsFeatureNotEnabled)
             }
@@ -269,11 +269,11 @@ impl Request {
     pub fn send_lazy(self) -> Result<ResponseLazy, Error> {
         let parsed_request = ParsedRequest::new(self)?;
         if parsed_request.url.https {
-            #[cfg(any(feature = "rustls", feature = "openssl"))]
+            #[cfg(feature = "rustls")]
             {
                 Connection::new(parsed_request).send_https()
             }
-            #[cfg(not(any(feature = "rustls", feature = "openssl")))]
+            #[cfg(not(feature = "rustls"))]
             {
                 Err(Error::HttpsFeatureNotEnabled)
             }

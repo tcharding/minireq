@@ -45,22 +45,6 @@
 //! crate to auto-detect root certificates installed in common
 //! locations.
 //!
-//! ## `https-bundled`
-//!
-//! Like `https`, but uses a statically linked copy of the OpenSSL
-//! library (provided by
-//! [`openssl-sys`](https://crates.io/crates/openssl-sys) with
-//! features = "vendored"). This feature on its own doesn't provide
-//! any detection of where your root certificates are installed. They
-//! can be specified via the environment variables `SSL_CERT_FILE` or
-//! `SSL_CERT_DIR`.
-//!
-//! ## `https-bundled-probe`
-//!
-//! Like `https-bundled`, but also includes the
-//! [`openssl-probe`](https://crates.io/crates/openssl-probe) crate to
-//! auto-detect root certificates installed in common locations.
-//!
 //! ## `punycode`
 //!
 //! This feature enables requests to non-ascii domains: the
