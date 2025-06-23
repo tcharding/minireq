@@ -45,6 +45,24 @@ pub struct Response {
 }
 
 impl Response {
+    /// Creates a new Response directly (for WASM usage)
+    #[cfg(feature = "wasm")]
+    pub(crate) fn new(
+        status_code: i32,
+        reason_phrase: String,
+        headers: alloc::collections::BTreeMap<String, String>,
+        url: String,
+        body: Vec<u8>,
+    ) -> Response {
+        Response {
+            status_code,
+            reason_phrase,
+            headers,
+            url,
+            body,
+        }
+    }
+
     #[cfg(feature = "std")]
     pub(crate) fn create(mut parent: ResponseLazy, is_head: bool) -> Result<Response, Error> {
         let mut body = Vec::new();
