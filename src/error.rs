@@ -116,7 +116,7 @@ impl fmt::Display for Error {
             // TODO: Uncomment these two for 3.0
             // InvalidProtocol => write!(f, "the url does not start with http:// or https://"),
             // InvalidProtocolInRedirect => write!(f, "got redirected to an absolute url which does not start with http:// or https://"),
-            Other(msg) => write!(f, "error in minreq: please open an issue in the minreq repo, include the following: '{}'", msg),
+            Other(msg) => write!(f, "error in minireq: please open an issue in the minireq repo, include the following: '{}'", msg),
         }
     }
 }

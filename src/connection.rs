@@ -337,7 +337,7 @@ fn ensure_ascii_host(host: String) -> Result<String, Error> {
 /// Enforce the timeout by running the function in a new thread and
 /// parking the current one with a timeout.
 ///
-/// While minreq does use timeouts (somewhat) properly, some
+/// While minireq does use timeouts (somewhat) properly, some
 /// interfaces such as [ToSocketAddrs] don't allow for specifying the
 /// timeout. Hence this.
 fn enforce_timeout<F, R>(timeout_at: Option<Instant>, f: F) -> Result<R, Error>

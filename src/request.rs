@@ -57,13 +57,13 @@ impl fmt::Display for Method {
 
 /// An HTTP request.
 ///
-/// Generally created by the [`minreq::get`](fn.get.html)-style
+/// Generally created by the [`minireq::get`](fn.get.html)-style
 /// functions, corresponding to the HTTP method we want to use.
 ///
 /// # Example
 ///
 /// ```
-/// let request = minreq::post("http://example.com");
+/// let request = minireq::post("http://example.com");
 /// ```
 ///
 /// After creating the request, you would generally call
@@ -216,9 +216,8 @@ impl Request {
     ///
     /// `None` disables the cap, and may cause the program to use any
     /// amount of memory if the server responds with a lot of headers
-    /// (or an infinite amount). In minreq versions 2.x.x, the default
-    /// is None, so setting this manually is recommended when talking
-    /// to untrusted servers.
+    /// (or an infinite amount). The default is None, so setting this
+    /// manually is recommended when talking to untrusted servers.
     pub fn with_max_headers_size<S: Into<Option<usize>>>(mut self, max_headers_size: S) -> Request {
         self.max_headers_size = max_headers_size.into();
         self
@@ -235,9 +234,8 @@ impl Request {
     ///
     /// `None` disables the cap, and may cause the program to use any
     /// amount of memory if the server responds with a long (or
-    /// infinite) status line. In minreq versions 2.x.x, the default
-    /// is None, so setting this manually is recommended when talking
-    /// to untrusted servers.
+    /// infinite) status line. The default is None, so setting this
+    /// manually is recommended when talking to untrusted servers.
     pub fn with_max_status_line_length<S: Into<Option<usize>>>(
         mut self,
         max_status_line_len: S,
@@ -260,7 +258,7 @@ impl Request {
     /// Returns `Err` if we run into an error while sending the
     /// request, or receiving/parsing the response. The specific error
     /// is described in the `Err`, and it can be any
-    /// [`minreq::Error`](enum.Error.html) except
+    /// [`minireq::Error`](enum.Error.html) except
     /// [`SerdeJsonError`](enum.Error.html#variant.SerdeJsonError) and
     /// [`InvalidUtf8InBody`](enum.Error.html#variant.InvalidUtf8InBody).
     pub fn send(self) -> Result<Response, Error> {

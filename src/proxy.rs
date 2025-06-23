@@ -49,13 +49,13 @@ impl Proxy {
     /// [http://][user[:password]@]host[:port]
     /// ```
     ///
-    /// The default port is 8080, to be changed to 1080 in minreq 3.0.
+    /// The default port is 8080, to be changed to 1080 in minireq 3.0.
     ///
     /// # Example
     ///
     /// ```
-    /// let proxy = minreq::Proxy::new("user:password@localhost:1080").unwrap();
-    /// let request = minreq::post("http://example.com").with_proxy(proxy);
+    /// let proxy = minireq::Proxy::new("user:password@localhost:1080").unwrap();
+    /// let request = minireq::post("http://example.com").with_proxy(proxy);
     /// ```
     ///
     pub fn new<S: AsRef<str>>(proxy: S) -> Result<Self, Error> {

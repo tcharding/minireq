@@ -1,8 +1,13 @@
-# minreq
-[![Crates.io](https://img.shields.io/crates/d/minreq.svg)](https://crates.io/crates/minreq)
-[![Documentation](https://docs.rs/minreq/badge.svg)](https://docs.rs/minreq)
-![Unit tests](https://github.com/neonmoe/minreq/actions/workflows/unit-tests.yml/badge.svg)
-![MSRV](https://github.com/neonmoe/minreq/actions/workflows/msrv.yml/badge.svg)
+# minireq - forked from minreq
+[![Crates.io](https://img.shields.io/crates/d/minireq.svg)](https://crates.io/crates/minireq)
+[![Documentation](https://docs.rs/minireq/badge.svg)](https://docs.rs/minireq)
+![Unit tests](https://github.com/tcharding/minireq/actions/workflows/unit-tests.yml/badge.svg)
+![MSRV](https://github.com/tcharding/minireq/actions/workflows/msrv.yml/badge.svg)
+
+This crate is a fork for the very nice
+[minreq](https://github.com/neonmoe/minreq). I chose to fork and
+rename it because I wanted to totally gut it and provide a crate with
+different goals. Many thanks to the original author.
 
 Simple, minimal-dependency HTTP client. Optional features for json
 responses (`json-using-serde`), unicode domains (`punycode`), http
@@ -25,7 +30,7 @@ library, and their impact on executable size reflects that.
 ## Documentation
 
 Build your own with `cargo doc --all-features`, or browse the online
-documentation at [docs.rs/minreq](https://docs.rs/minreq).
+documentation at [docs.rs/minireq](https://docs.rs/minireq).
 
 ## Minimum Supported Rust Version (MSRV)
 
