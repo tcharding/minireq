@@ -62,4 +62,8 @@ name = "iterator"
 name = "json"
 required-features = ["json-using-serde"]
 
+[lints.clippy]
+# Allow `format!("{}", x)`instead of enforcing `format!("{x}")`
+uninlined_format_args = "allow"
+
 # vim: ft=conf
