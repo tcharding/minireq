@@ -45,40 +45,6 @@
 //! crate to auto-detect root certificates installed in common
 //! locations.
 //!
-//! ## `https-native`
-//!
-//! Like `https`, but uses
-//! [`tls-native`](https://crates.io/crates/native-tls) instead of
-//! `rustls`.
-//!
-//! ## `https-bundled`
-//!
-//! Like `https`, but uses a statically linked copy of the OpenSSL
-//! library (provided by
-//! [`openssl-sys`](https://crates.io/crates/openssl-sys) with
-//! features = "vendored"). This feature on its own doesn't provide
-//! any detection of where your root certificates are installed. They
-//! can be specified via the environment variables `SSL_CERT_FILE` or
-//! `SSL_CERT_DIR`.
-//!
-//! ## `https-bundled-probe`
-//!
-//! Like `https-bundled`, but also includes the
-//! [`openssl-probe`](https://crates.io/crates/openssl-probe) crate to
-//! auto-detect root certificates installed in common locations.
-//!
-//! ## `json-using-serde`
-//!
-//! This feature allows both serialize and deserialize JSON payload
-//! using the [`serde_json`](https://crates.io/crates/serde_json)
-//! crate.
-//!
-//! [`Request`](struct.Request.html) and
-//! [`Response`](struct.Response.html) expose
-//! [`with_json()`](struct.Request.html#method.with_json) and
-//! [`json()`](struct.Response.html#method.json) for constructing the
-//! struct from JSON and extracting the JSON body out, respectively.
-//!
 //! ## `punycode`
 //!
 //! This feature enables requests to non-ascii domains: the
@@ -89,6 +55,18 @@
 //! by default), your request will fail with a
 //! [`PunycodeFeatureNotEnabled`](enum.Error.html#variant.PunycodeFeatureNotEnabled)
 //! error.
+//!
+//! ## `async`
+//!
+//! This feature enables asynchronous HTTP requests using tokio. It provides
+//! [`send_async()`](struct.Request.html#method.send_async) and
+//! [`send_lazy_async()`](struct.Request.html#method.send_lazy_async) methods
+//! that return futures for non-blocking operation.
+//!
+//! ## `async-https`
+//!
+//! Like `async`, but also enables asynchronous HTTPS support using tokio-rustls.
+//! This feature depends on both `async` and `https-rustls` features.
 //!
 //! ## `proxy`
 //!
@@ -110,12 +88,15 @@
 //! or something could go wrong during the download.
 //!
 //! ```
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let response = minireq::get("http://example.com").send()?;
 //! assert!(response.as_str()?.contains("</html>"));
 //! assert_eq!(200, response.status_code);
 //! assert_eq!("OK", response.reason_phrase);
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! Note: you could change the `get` function to `head` or `put` or
@@ -128,11 +109,14 @@
 //! `send()`.
 //!
 //! ```
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let response = minireq::post("http://example.com")
 //!     .with_body("Foobar")
 //!     .send()?;
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! ## Headers (sending)
@@ -141,11 +125,14 @@
 //! `send()`.
 //!
 //! ```
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let response = minireq::get("http://example.com")
 //!     .with_header("Accept", "text/html")
 //!     .send()?;
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! ## Headers (receiving)
@@ -158,10 +145,13 @@
 //! this unifies the casings for easier `get()`ing.
 //!
 //! ```
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let response = minireq::get("http://example.com").send()?;
 //! assert!(response.headers.get("content-type").unwrap().starts_with("text/html"));
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! ## Timeouts
@@ -172,11 +162,14 @@
 //! NOTE: There is no timeout by default.
 //!
 //! ```no_run
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let response = minireq::post("http://example.com")
 //!     .with_timeout(10)
 //!     .send()?;
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! ## Proxy
@@ -189,6 +182,7 @@
 //! supported at this time.
 //!
 //! ```no_run
+//! # #[cfg(feature = "std")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! #[cfg(feature = "proxy")]
 //! {
@@ -199,6 +193,8 @@
 //!     println!("{}", response.as_str()?);
 //! }
 //! # Ok(()) }
+//! # #[cfg(not(feature = "std"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 //! ```
 //!
 //! # Timeouts
@@ -208,7 +204,7 @@
 //!
 //! - Use [`with_timeout`](struct.Request.html#method.with_timeout) on
 //!   your request to set the timeout per-request like so:
-//!   ```
+//!   ```text,ignore
 //!   minireq::get("/").with_timeout(8).send();
 //!   ```
 //! - Set the environment variable `MINREQ_TIMEOUT` to the desired
@@ -230,13 +226,12 @@
 // fixed before our MSRV gets that high.
 #![allow(clippy::io_other_error)]
 
-#[cfg(feature = "json-using-serde")]
-extern crate serde;
-#[cfg(feature = "json-using-serde")]
-extern crate serde_json;
+extern crate alloc;
 
+#[cfg(feature = "std")]
 mod connection;
 mod error;
+#[cfg(feature = "std")]
 mod http_url;
 #[cfg(feature = "proxy")]
 mod proxy;
@@ -247,4 +242,6 @@ pub use error::*;
 #[cfg(feature = "proxy")]
 pub use proxy::*;
 pub use request::*;
-pub use response::*;
+pub use response::Response;
+#[cfg(feature = "std")]
+pub use response::ResponseLazy;

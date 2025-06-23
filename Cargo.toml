@@ -20,9 +20,6 @@ maintenance = { status = "experimental" }
 urlencoding = { version = "2.1.0", optional = true }
 # For the punycode feature:
 punycode = { version = "0.4.1", optional = true }
-# For the json-using-serde feature:
-serde = { version = "1.0.101", optional = true }
-serde_json = { version = "1.0.0", optional = true }
 # For the proxy feature:
 base64 = { version = "0.22", optional = true }
 # For the https features:
@@ -30,39 +27,43 @@ rustls = { version = "0.21.1", optional = true }
 rustls-native-certs = { version = "0.6.1", optional = true }
 webpki-roots = { version = "0.25.2", optional = true }
 rustls-webpki = { version = "0.101.0", optional = true }
-openssl = { version = "0.10.29", optional = true }
-log = { version = "0.4.0" }
-openssl-probe = { version = "0.1", optional = true }
-native-tls = { version = "0.2", optional = true }
+log = { version = "0.4.0", optional = true }
+# For the async feature:
+tokio = { version = "1.0", features = ["net", "time", "io-util", "rt", "rt-multi-thread", "macros"], optional = true }
+tokio-rustls = { version = "0.24", optional = true }
 
 [dev-dependencies]
 tiny_http = "0.12"
 chrono = "0.4.0"
 
 [package.metadata.docs.rs]
-features = ["json-using-serde", "proxy", "https", "punycode"]
+features = ["proxy", "https", "punycode"]
 
 [features]
+default = ["std"]
+std = []
+log = ["dep:log"]
 https = ["https-rustls"]
 https-rustls = ["rustls", "webpki-roots", "rustls-webpki"]
 https-rustls-probe = ["rustls", "rustls-native-certs"]
-https-bundled = ["openssl/vendored"]
-https-bundled-probe = ["https-bundled", "openssl-probe"]
-https-native = ["native-tls"]
-json-using-serde = ["serde", "serde_json"]
 proxy = ["base64"]
+async = ["tokio", "std"]
+async-https = ["async", "https-rustls", "tokio-rustls"]
 
 [[example]]
 name = "hello"
+required-features = ["std"]
 
 [[example]]
 name = "iterator"
+required-features = ["std"]
 
 [[example]]
-name = "json"
-required-features = ["json-using-serde"]
+name = "async_hello"
+required-features = ["async"]
 
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(have_min_max_version)'] }
+[lints.clippy]
+# Allow `format!("{}", x)`instead of enforcing `format!("{x}")`
+uninlined_format_args = "allow"
 
 # vim: ft=conf

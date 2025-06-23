@@ -9,11 +9,10 @@ This crate is a fork for the very nice
 rename it because I wanted to totally gut it and provide a crate with
 different goals. Many thanks to the original author.
 
-Simple, minimal-dependency HTTP client. Optional features for json
-responses (`json-using-serde`), unicode domains (`punycode`), http
-proxies (`proxy`), and https with various TLS implementations
-(`https-rustls`, `https-rustls-probe`, `https-bundled`,
-`https-bundled-probe`,`https-native`, and `https` which is an alias
+Simple, minimal-dependency HTTP client. Optional features for
+unicode domains (`punycode`), http proxies (`proxy`), async support
+(`async`, `async-https`), and https with various TLS implementations
+(`https-rustls`, `https-rustls-probe`, and `https` which is an alias
 for `https-rustls`).
 
 Without any optional features, my casual testing indicates about 100
@@ -23,9 +22,9 @@ KB on my machine, where the [hello](examples/hello.rs) example is 347
 KB. Both are pure Rust, so aside from `libc`, everything is statically
 linked.
 
-Note: some of the dependencies of this crate (especially `serde` and
-the various `https` libraries) are a lot more complicated than this
-library, and their impact on executable size reflects that.
+Note: some of the dependencies of this crate (especially the various
+`https` libraries) are a lot more complicated than this library, and
+their impact on executable size reflects that.
 
 ## Documentation
 
@@ -40,28 +39,9 @@ entirely, including the commands instructed.
 We use an MSRV per major release, i.e., with a new major release we
 reserve the right to change the MSRV.
 
-The current major version (v2) of this library should always compile with any
-combination of features excluding the TLS and urlencoding features on **Rust
-1.48**. This is because those dependencies themselves have a higher MSRV.
-
-That said, the crate does still require forcing some dependencies to
-lower-than-latest versions to actually compile with the older
-compiler, as these dependencies have upped their MSRV in a patch
-version. This can be achieved with the following (these just update
-your Cargo.lock):
-
-```sh
-cargo update --package=log --precise=0.4.18
-cargo update --package=httpdate --precise=1.0.2
-cargo update --package=serde_json --precise=1.0.100
-cargo update --package=chrono --precise=0.4.23
-cargo update --package=num-traits --precise=0.2.18
-cargo update --package=tempfile --precise=3.17.1
-cargo update --package=libc --precise=0.2.163
-cargo update --package=iana-time-zone --precise=0.1.61
-# This again, for some reason.
-cargo update --package=httpdate --precise=1.0.2
-```
+The current major version of this library should always compile with
+default features (i.e., `std`) on **Rust 1.63**. Other features may
+require a higher MSRV.
 
 ## License
 This crate is distributed under the terms of the [ISC license](COPYING.md).

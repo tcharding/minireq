@@ -1,9 +1,14 @@
-use crate::{connection::HttpStream, Error};
-use std::collections::HashMap;
+#[cfg(feature = "std")]
+use crate::connection::HttpStream;
+use crate::Error;
+use alloc::collections::BTreeMap;
+use core::str;
+#[cfg(feature = "std")]
 use std::io::{self, BufReader, Bytes, Read};
-use std::str;
 
+#[cfg(feature = "std")]
 const BACKING_READ_BUFFER_LENGTH: usize = 16 * 1024;
+#[cfg(feature = "std")]
 const MAX_CONTENT_LENGTH: usize = 16 * 1024;
 
 /// An HTTP response.
@@ -13,10 +18,13 @@ const MAX_CONTENT_LENGTH: usize = 16 * 1024;
 /// # Example
 ///
 /// ```no_run
+/// # #[cfg(feature = "std")]
 /// # fn main() -> Result<(), minireq::Error> {
 /// let response = minireq::get("http://example.com").send()?;
 /// println!("{}", response.as_str()?);
 /// # Ok(()) }
+/// # #[cfg(not(feature = "std"))]
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 /// ```
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Response {
@@ -26,7 +34,7 @@ pub struct Response {
     pub reason_phrase: String,
     /// The headers of the response. The header field names (the
     /// keys) are all lowercase.
-    pub headers: HashMap<String, String>,
+    pub headers: BTreeMap<String, String>,
     /// The URL of the resource returned in this response. May differ from the
     /// request URL if it was redirected or typo corrections were applied (e.g.
     /// <http://example.com?foo=bar> would be corrected to
@@ -37,6 +45,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[cfg(feature = "std")]
     pub(crate) fn create(mut parent: ResponseLazy, is_head: bool) -> Result<Response, Error> {
         let mut body = Vec::new();
         if !is_head && parent.status_code != 204 && parent.status_code != 304 {
@@ -76,12 +85,14 @@ impl Response {
     /// # Example
     ///
     /// ```no_run
+    /// # #[cfg(feature = "std")]
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let url = "http://example.org/";
     /// let response = minireq::get(url).send()?;
     /// println!("{}", response.as_str()?);
-    /// # Ok(())
-    /// # }
+    /// # Ok(()) }
+    /// # #[cfg(not(feature = "std"))]
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
     /// ```
     pub fn as_str(&self) -> Result<&str, Error> {
         match str::from_utf8(&self.body) {
@@ -97,12 +108,14 @@ impl Response {
     /// # Example
     ///
     /// ```no_run
+    /// # #[cfg(feature = "std")]
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let url = "http://example.org/";
     /// let response = minireq::get(url).send()?;
     /// println!("{:?}", response.as_bytes());
-    /// # Ok(())
-    /// # }
+    /// # Ok(()) }
+    /// # #[cfg(not(feature = "std"))]
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
     /// ```
     pub fn as_bytes(&self) -> &[u8] {
         &self.body
@@ -115,56 +128,19 @@ impl Response {
     /// # Example
     ///
     /// ```no_run
+    /// # #[cfg(feature = "std")]
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let url = "http://example.org/";
     /// let response = minireq::get(url).send()?;
     /// println!("{:?}", response.into_bytes());
     /// // This would error, as into_bytes consumes the Response:
     /// // let x = response.status_code;
-    /// # Ok(())
-    /// # }
+    /// # Ok(()) }
+    /// # #[cfg(not(feature = "std"))]
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
     /// ```
     pub fn into_bytes(self) -> Vec<u8> {
         self.body
-    }
-
-    /// Converts JSON body to a `struct` using Serde.
-    ///
-    /// # Errors
-    ///
-    /// Returns
-    /// [`SerdeJsonError`](enum.Error.html#variant.SerdeJsonError) if
-    /// Serde runs into a problem, or
-    /// [`InvalidUtf8InBody`](enum.Error.html#variant.InvalidUtf8InBody)
-    /// if the body is not UTF-8.
-    ///
-    /// # Example
-    /// In case compiler cannot figure out return type you might need to declare it explicitly:
-    ///
-    /// ```no_run
-    /// use serde_json::Value;
-    ///
-    /// # fn main() -> Result<(), minireq::Error> {
-    /// # let url_to_json_resource = "http://example.org/resource.json";
-    /// // Value could be any type that implements Deserialize!
-    /// let user = minireq::get(url_to_json_resource).send()?.json::<Value>()?;
-    /// println!("User name is '{}'", user["name"]);
-    /// # Ok(())
-    /// # }
-    /// ```
-    #[cfg(feature = "json-using-serde")]
-    pub fn json<'a, T>(&'a self) -> Result<T, Error>
-    where
-        T: serde::de::Deserialize<'a>,
-    {
-        let str = match self.as_str() {
-            Ok(str) => str,
-            Err(_) => return Err(Error::InvalidUtf8InResponse),
-        };
-        match serde_json::from_str(str) {
-            Ok(json) => Ok(json),
-            Err(err) => Err(Error::SerdeJsonError(err)),
-        }
     }
 }
 
@@ -192,6 +168,7 @@ impl Response {
 /// ```no_run
 /// // This is how the normal Response works behind the scenes, and
 /// // how you might use ResponseLazy.
+/// # #[cfg(feature = "std")]
 /// # fn main() -> Result<(), minireq::Error> {
 /// let response = minireq::get("http://example.com").send_lazy()?;
 /// let mut vec = Vec::new();
@@ -202,8 +179,10 @@ impl Response {
 /// }
 /// # Ok(())
 /// # }
-///
+/// # #[cfg(not(feature = "std"))]
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> { Ok(()) }
 /// ```
+#[cfg(feature = "std")]
 pub struct ResponseLazy {
     /// The status code of the response, eg. 404.
     pub status_code: i32,
@@ -211,7 +190,7 @@ pub struct ResponseLazy {
     pub reason_phrase: String,
     /// The headers of the response. The header field names (the
     /// keys) are all lowercase.
-    pub headers: HashMap<String, String>,
+    pub headers: BTreeMap<String, String>,
     /// The URL of the resource returned in this response. May differ from the
     /// request URL if it was redirected or typo corrections were applied (e.g.
     /// <http://example.com?foo=bar> would be corrected to
@@ -223,8 +202,10 @@ pub struct ResponseLazy {
     max_trailing_headers_size: Option<usize>,
 }
 
+#[cfg(feature = "std")]
 type HttpStreamBytes = Bytes<BufReader<HttpStream>>;
 
+#[cfg(feature = "std")]
 impl ResponseLazy {
     pub(crate) fn from_stream(
         stream: HttpStream,
@@ -252,6 +233,7 @@ impl ResponseLazy {
     }
 }
 
+#[cfg(feature = "std")]
 impl Iterator for ResponseLazy {
     type Item = Result<(u8, usize), Error>;
 
@@ -274,6 +256,7 @@ impl Iterator for ResponseLazy {
     }
 }
 
+#[cfg(feature = "std")]
 impl Read for ResponseLazy {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let mut index = 0;
@@ -299,6 +282,7 @@ impl Read for ResponseLazy {
     }
 }
 
+#[cfg(feature = "std")]
 fn read_until_closed(bytes: &mut HttpStreamBytes) -> Option<<ResponseLazy as Iterator>::Item> {
     if let Some(byte) = bytes.next() {
         match byte {
@@ -310,6 +294,7 @@ fn read_until_closed(bytes: &mut HttpStreamBytes) -> Option<<ResponseLazy as Ite
     }
 }
 
+#[cfg(feature = "std")]
 fn read_with_content_length(
     bytes: &mut HttpStreamBytes,
     content_length: &mut usize,
@@ -328,9 +313,10 @@ fn read_with_content_length(
     None
 }
 
+#[cfg(feature = "std")]
 fn read_trailers(
     bytes: &mut HttpStreamBytes,
-    headers: &mut HashMap<String, String>,
+    headers: &mut BTreeMap<String, String>,
     mut max_headers_size: Option<usize>,
 ) -> Result<(), Error> {
     loop {
@@ -347,9 +333,10 @@ fn read_trailers(
     Ok(())
 }
 
+#[cfg(feature = "std")]
 fn read_chunked(
     bytes: &mut HttpStreamBytes,
-    headers: &mut HashMap<String, String>,
+    headers: &mut BTreeMap<String, String>,
     expecting_more_chunks: &mut bool,
     chunk_length: &mut usize,
     content_length: &mut usize,
@@ -429,6 +416,7 @@ fn read_chunked(
     None
 }
 
+#[cfg(feature = "std")]
 enum HttpStreamState {
     // No Content-Length, and Transfer-Encoding != chunked, so we just
     // read unti lthe server closes the connection (this should be the
@@ -448,14 +436,16 @@ enum HttpStreamState {
 // constructors, but not in their structs, for api-cleanliness
 // reasons. (Eg. response.status_code is much cleaner than
 // response.meta.status_code or similar.)
+#[cfg(feature = "std")]
 struct ResponseMetadata {
     status_code: i32,
     reason_phrase: String,
-    headers: HashMap<String, String>,
+    headers: BTreeMap<String, String>,
     state: HttpStreamState,
     max_trailing_headers_size: Option<usize>,
 }
 
+#[cfg(feature = "std")]
 fn read_metadata(
     stream: &mut HttpStreamBytes,
     mut max_headers_size: Option<usize>,
@@ -464,7 +454,7 @@ fn read_metadata(
     let line = read_line(stream, max_status_line_len, Error::StatusLineOverflow)?;
     let (status_code, reason_phrase) = parse_status_line(&line);
 
-    let mut headers = HashMap::new();
+    let mut headers = BTreeMap::new();
     loop {
         let line = read_line(stream, max_headers_size, Error::HeadersOverflow)?;
         if line.is_empty() {
@@ -515,6 +505,7 @@ fn read_metadata(
     })
 }
 
+#[cfg(feature = "std")]
 fn read_line(
     stream: &mut HttpStreamBytes,
     max_len: Option<usize>,
@@ -544,6 +535,7 @@ fn read_line(
     String::from_utf8(bytes).map_err(|_error| Error::InvalidUtf8InResponse)
 }
 
+#[cfg(feature = "std")]
 fn parse_status_line(line: &str) -> (i32, String) {
     // sample status line format
     // HTTP/1.1 200 OK
@@ -571,6 +563,7 @@ fn parse_status_line(line: &str) -> (i32, String) {
     (503, "Server did not provide a status line".to_string())
 }
 
+#[cfg(feature = "std")]
 fn parse_header(mut line: String) -> Option<(String, String)> {
     if let Some(location) = line.find(':') {
         // Trim the first character of the header if it is a space,

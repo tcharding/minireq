@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 extern crate minireq;
 mod setup;
 
@@ -5,31 +7,13 @@ use self::setup::*;
 use std::io;
 
 #[test]
-#[cfg(any(feature = "rustls", feature = "https-bundled", feature = "native-tls"))]
+#[cfg(feature = "rustls")]
 fn test_https() {
     // TODO: Implement this locally.
     assert_eq!(
         get_status_code(minireq::get("https://example.com").send()),
         200,
     );
-}
-
-#[test]
-#[cfg(feature = "json-using-serde")]
-fn test_json_using_serde() {
-    const JSON_SRC: &str = r#"{
-        "str": "Json test",
-        "num": 42
-    }"#;
-
-    let original_json: serde_json::Value = serde_json::from_str(JSON_SRC).unwrap();
-    let response = minireq::post(url("/echo"))
-        .with_json(&original_json)
-        .unwrap()
-        .send()
-        .unwrap();
-    let actual_json: serde_json::Value = response.json().unwrap();
-    assert_eq!(&actual_json, &original_json);
 }
 
 #[test]

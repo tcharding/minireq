@@ -1,9 +1,10 @@
 use crate::request::ParsedRequest;
 use crate::{Error, Method, ResponseLazy};
+use core::time::Duration;
 use std::env;
 use std::io::{self, Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 type UnsecuredStream = TcpStream;
 
@@ -12,27 +13,9 @@ mod rustls_stream;
 #[cfg(feature = "rustls")]
 type SecuredStream = rustls_stream::SecuredStream;
 
-#[cfg(all(not(feature = "rustls"), feature = "native-tls"))]
-mod native_tls_stream;
-#[cfg(all(not(feature = "rustls"), feature = "native-tls"))]
-type SecuredStream = native_tls_stream::SecuredStream;
-
-#[cfg(all(
-    not(feature = "rustls"),
-    not(feature = "native-tls"),
-    feature = "openssl",
-))]
-mod openssl_stream;
-#[cfg(all(
-    not(feature = "rustls"),
-    not(feature = "native-tls"),
-    feature = "openssl",
-))]
-type SecuredStream = openssl_stream::SecuredStream;
-
 pub(crate) enum HttpStream {
     Unsecured(UnsecuredStream, Option<Instant>),
-    #[cfg(any(feature = "rustls", feature = "native-tls", feature = "openssl",))]
+    #[cfg(feature = "rustls")]
     Secured(Box<SecuredStream>, Option<Instant>),
 }
 
@@ -41,7 +24,7 @@ impl HttpStream {
         HttpStream::Unsecured(reader, timeout_at)
     }
 
-    #[cfg(any(feature = "rustls", feature = "native-tls", feature = "openssl"))]
+    #[cfg(feature = "rustls")]
     fn create_secured(reader: SecuredStream, timeout_at: Option<Instant>) -> HttpStream {
         HttpStream::Secured(Box::new(reader), timeout_at)
     }
@@ -78,7 +61,7 @@ impl Read for HttpStream {
                 timeout(inner, *timeout_at)?;
                 inner.read(buf)
             }
-            #[cfg(any(feature = "rustls", feature = "openssl", feature = "native-tls"))]
+            #[cfg(feature = "rustls")]
             HttpStream::Secured(inner, timeout_at) => {
                 timeout(inner.get_ref(), *timeout_at)?;
                 inner.read(buf)
@@ -91,6 +74,60 @@ impl Read for HttpStream {
             }
             r => r,
         }
+    }
+}
+
+/// An async connection to the server for sending
+/// [`Request`](struct.Request.html)s.
+#[cfg(feature = "async")]
+pub struct AsyncConnection {
+    request: ParsedRequest,
+    timeout_at: Option<Instant>,
+}
+
+#[cfg(feature = "async")]
+impl AsyncConnection {
+    /// Creates a new `AsyncConnection`.
+    pub(crate) fn new(request: ParsedRequest) -> AsyncConnection {
+        let timeout = request
+            .config
+            .timeout
+            .or_else(|| match env::var("MINREQ_TIMEOUT") {
+                Ok(t) => t.parse::<u64>().ok(),
+                Err(_) => None,
+            });
+        let timeout_at = timeout.map(|t| Instant::now() + Duration::from_secs(t));
+        AsyncConnection {
+            request,
+            timeout_at,
+        }
+    }
+
+    /// Sends the [`Request`](struct.Request.html) asynchronously using HTTPS.
+    #[cfg(feature = "async-https")]
+    pub(crate) async fn send_https(self) -> Result<ResponseLazy, Error> {
+        // Use spawn_blocking to run the sync HTTPS code in a thread pool
+        let sync_conn = Connection {
+            request: self.request,
+            timeout_at: self.timeout_at,
+        };
+
+        tokio::task::spawn_blocking(move || sync_conn.send_https())
+            .await
+            .map_err(|e| Error::IoError(io::Error::new(io::ErrorKind::Other, e)))?
+    }
+
+    /// Sends the [`Request`](struct.Request.html) asynchronously using HTTP.
+    pub(crate) async fn send(self) -> Result<ResponseLazy, Error> {
+        // Use spawn_blocking to run the sync HTTP code in a thread pool
+        let sync_conn = Connection {
+            request: self.request,
+            timeout_at: self.timeout_at,
+        };
+
+        tokio::task::spawn_blocking(move || sync_conn.send())
+            .await
+            .map_err(|e| Error::IoError(io::Error::new(io::ErrorKind::Other, e)))?
     }
 }
 
@@ -125,28 +162,21 @@ impl Connection {
     /// The Result will be Err if the timeout has already passed.
     fn timeout(&self) -> Result<Option<Duration>, io::Error> {
         let timeout = timeout_at_to_duration(self.timeout_at);
+        #[cfg(feature = "log")]
         log::trace!("Timeout requested, it is currently: {:?}", timeout);
         timeout
     }
 
     /// Sends the [`Request`](struct.Request.html), consumes this
     /// connection, and returns a [`Response`](struct.Response.html).
-    #[cfg(any(feature = "rustls", feature = "native-tls", feature = "openssl",))]
+    #[cfg(feature = "rustls")]
     pub(crate) fn send_https(mut self) -> Result<ResponseLazy, Error> {
         enforce_timeout(self.timeout_at, move || {
             self.request.url.host = ensure_ascii_host(self.request.url.host)?;
 
-            #[cfg(feature = "rustls")]
             let secured_stream = rustls_stream::create_secured_stream(&self)?;
-            #[cfg(all(not(feature = "rustls"), feature = "native-tls"))]
-            let secured_stream = native_tls_stream::create_secured_stream(&self)?;
-            #[cfg(all(
-                not(feature = "rustls"),
-                not(feature = "native-tls"),
-                feature = "openssl",
-            ))]
-            let secured_stream = openssl_stream::create_secured_stream(&self)?;
 
+            #[cfg(feature = "log")]
             log::trace!("Reading HTTPS response from {}.", self.request.url.host);
             let response = ResponseLazy::from_stream(
                 secured_stream,
@@ -165,15 +195,18 @@ impl Connection {
             self.request.url.host = ensure_ascii_host(self.request.url.host)?;
             let bytes = self.request.as_bytes();
 
+            #[cfg(feature = "log")]
             log::trace!("Establishing TCP connection to {}.", self.request.url.host);
             let mut tcp = self.connect()?;
 
             // Send request
+            #[cfg(feature = "log")]
             log::trace!("Writing HTTP request.");
             let _ = tcp.set_write_timeout(self.timeout()?);
             tcp.write_all(&bytes)?;
 
             // Receive response
+            #[cfg(feature = "log")]
             log::trace!("Reading HTTP response.");
             let stream = HttpStream::create_unsecured(tcp, self.timeout_at);
             let response = ResponseLazy::from_stream(
@@ -250,13 +283,9 @@ fn handle_redirects(
         NextHop::Redirect(connection) => {
             let connection = connection?;
             if connection.request.url.https {
-                #[cfg(not(any(
-                    feature = "rustls",
-                    feature = "openssl",
-                    feature = "native-tls"
-                )))]
+                #[cfg(not(feature = "rustls"))]
                 return Err(Error::HttpsFeatureNotEnabled);
-                #[cfg(any(feature = "rustls", feature = "openssl", feature = "native-tls"))]
+                #[cfg(feature = "rustls")]
                 return connection.send_https();
             } else {
                 connection.send()
@@ -283,6 +312,7 @@ fn get_redirect(mut connection: Connection, status_code: i32, url: Option<&Strin
                 Some(url) => url,
                 None => return NextHop::Redirect(Err(Error::RedirectLocationMissing)),
             };
+            #[cfg(feature = "log")]
             log::debug!("Redirecting ({}) to: {}", status_code, url);
 
             match connection.request.redirect_to(url.as_str()) {
