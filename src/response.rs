@@ -45,6 +45,18 @@ pub struct Response {
 }
 
 impl Response {
+    /// Creates a response from a byte buffer.
+    ///
+    /// This is a low level function. If you are using the `std` or `async`
+    /// features consider using one of the `send` methods on [`Request`].
+    pub fn from_bytes(buf: &[u8], is_head: bool) -> Result<Self, Error> {
+        // TODO: Add `ResponseLazy::from_bytes` similar to `ResponseLazy::from_stream`.
+        // let response = ResponseLazy::from_bytes(buf)?;
+        // Response::create(response, is_head)
+
+        todo!("Create a Response from a byte buffer.")
+    }
+
     /// Creates a new Response directly (for WASM usage)
     #[cfg(feature = "wasm")]
     pub(crate) fn new(
