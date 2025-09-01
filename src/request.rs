@@ -250,7 +250,7 @@ impl Request {
     /// [`InvalidUtf8InBody`](enum.Error.html#variant.InvalidUtf8InBody).
     #[cfg(any(feature = "std", feature = "wasm"))]
     pub fn send(self) -> Result<Response, Error> {
-        let parsed_request = ParsedRequest::new(self)?;
+        let parsed_request = self.into_parsed()?;
 
         // WASM takes priority over std if both are enabled
         #[cfg(feature = "wasm")]
@@ -284,7 +284,7 @@ impl Request {
     /// See [`send`](struct.Request.html#method.send).
     #[cfg(feature = "std")]
     pub fn send_lazy(self) -> Result<ResponseLazy, Error> {
-        let parsed_request = ParsedRequest::new(self)?;
+        let parsed_request = self.into_parsed()?;
         if parsed_request.url.https {
             #[cfg(feature = "rustls")]
             {
@@ -311,7 +311,7 @@ impl Request {
     /// [`InvalidUtf8InBody`](enum.Error.html#variant.InvalidUtf8InBody).
     #[cfg(feature = "async")]
     pub async fn send_async(self) -> Result<Response, Error> {
-        let parsed_request = ParsedRequest::new(self)?;
+        let parsed_request = self.into_parsed()?;
         if parsed_request.url.https {
             #[cfg(feature = "async-https")]
             {
@@ -337,7 +337,7 @@ impl Request {
     /// See [`send_async`](struct.Request.html#method.send_async).
     #[cfg(feature = "async")]
     pub async fn send_lazy_async(self) -> Result<ResponseLazy, Error> {
-        let parsed_request = ParsedRequest::new(self)?;
+        let parsed_request = self.into_parsed()?;
         if parsed_request.url.https {
             #[cfg(feature = "async-https")]
             {
