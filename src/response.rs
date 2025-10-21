@@ -19,8 +19,8 @@ const MAX_CONTENT_LENGTH: usize = 16 * 1024;
 ///
 /// ```no_run
 /// # #[cfg(feature = "std")]
-/// # fn main() -> Result<(), minireq::Error> {
-/// let response = minireq::get("http://example.com").send()?;
+/// # fn main() -> Result<(), bitreq::Error> {
+/// let response = bitreq::get("http://example.com").send()?;
 /// println!("{}", response.as_str()?);
 /// # Ok(()) }
 /// # #[cfg(not(feature = "std"))]
@@ -118,7 +118,7 @@ impl Response {
     /// # #[cfg(feature = "std")]
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let url = "http://example.org/";
-    /// let response = minireq::get(url).send()?;
+    /// let response = bitreq::get(url).send()?;
     /// println!("{}", response.as_str()?);
     /// # Ok(()) }
     /// # #[cfg(not(feature = "std"))]
@@ -141,7 +141,7 @@ impl Response {
     /// # #[cfg(feature = "std")]
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let url = "http://example.org/";
-    /// let response = minireq::get(url).send()?;
+    /// let response = bitreq::get(url).send()?;
     /// println!("{:?}", response.as_bytes());
     /// # Ok(()) }
     /// # #[cfg(not(feature = "std"))]
@@ -161,7 +161,7 @@ impl Response {
     /// # #[cfg(feature = "std")]
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let url = "http://example.org/";
-    /// let response = minireq::get(url).send()?;
+    /// let response = bitreq::get(url).send()?;
     /// println!("{:?}", response.into_bytes());
     /// // This would error, as into_bytes consumes the Response:
     /// // let x = response.status_code;
@@ -184,7 +184,7 @@ impl Response {
 ///
 /// In practice, "lazy loading" means that the bytes are only loaded
 /// as you iterate through them. The bytes are provided in the form of
-/// a `Result<(u8, usize), minireq::Error>`, as the reading operation
+/// a `Result<(u8, usize), bitreq::Error>`, as the reading operation
 /// can fail in various ways. The `u8` is the actual byte that was
 /// read, and `usize` is how many bytes we are expecting to read in
 /// the future (including this byte). Note, however, that the `usize`
@@ -199,8 +199,8 @@ impl Response {
 /// // This is how the normal Response works behind the scenes, and
 /// // how you might use ResponseLazy.
 /// # #[cfg(feature = "std")]
-/// # fn main() -> Result<(), minireq::Error> {
-/// let response = minireq::get("http://example.com").send_lazy()?;
+/// # fn main() -> Result<(), bitreq::Error> {
+/// let response = bitreq::get("http://example.com").send_lazy()?;
 /// let mut vec = Vec::new();
 /// for result in response {
 ///     let (byte, length) = result?;

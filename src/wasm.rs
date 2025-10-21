@@ -31,7 +31,7 @@ extern "C" {
     /// - Positive value: actual response length written to buffer
     /// - Negative value: error code
     /// - 0: empty response
-    fn minireq_wasm_http_request(
+    fn bitreq_wasm_http_request(
         method: *const u8,
         url: *const u8,
         headers: *const u8,
@@ -42,7 +42,7 @@ extern "C" {
     ) -> i32;
 
     /// Gets the HTTP status code from the last request.
-    fn minireq_wasm_get_status_code() -> i32;
+    fn bitreq_wasm_get_status_code() -> i32;
 
     /// Gets the response headers from the last request
     ///
@@ -56,7 +56,7 @@ extern "C" {
     /// - Positive value: actual headers length written to buffer
     /// - Negative value: error code
     /// - 0: no headers
-    fn minireq_wasm_get_response_headers(
+    fn bitreq_wasm_get_response_headers(
         headers_buf: *mut u8,
         headers_buf_len: usize,
     ) -> i32;
@@ -89,7 +89,7 @@ pub(crate) fn send_request(parsed_request: ParsedRequest) -> Result<Response, Er
 
     // Make the extern C call
     let result = unsafe {
-        minireq_wasm_http_request(
+        bitreq_wasm_http_request(
             method_ptr,
             url_ptr,
             headers_ptr,
@@ -109,7 +109,7 @@ pub(crate) fn send_request(parsed_request: ParsedRequest) -> Result<Response, Er
     response_buf.truncate(response_len);
 
     // Get status code
-    let status_code = unsafe { minireq_wasm_get_status_code() };
+    let status_code = unsafe { bitreq_wasm_get_status_code() };
 
     // Get response headers
     let response_headers = get_response_headers()?;
@@ -173,7 +173,7 @@ fn get_response_headers() -> Result<crate::alloc::collections::BTreeMap<String, 
     let headers_buf_len = headers_buf.len();
 
     let result = unsafe {
-        minireq_wasm_get_response_headers(headers_buf_ptr, headers_buf_len)
+        bitreq_wasm_get_response_headers(headers_buf_ptr, headers_buf_len)
     };
 
     if result < 0 {

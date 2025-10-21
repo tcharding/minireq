@@ -1,8 +1,8 @@
-# minireq - forked from minreq
-[![Crates.io](https://img.shields.io/crates/d/minireq.svg)](https://crates.io/crates/minireq)
-[![Documentation](https://docs.rs/minireq/badge.svg)](https://docs.rs/minireq)
-![Unit tests](https://github.com/tcharding/minireq/actions/workflows/unit-tests.yml/badge.svg)
-![MSRV](https://github.com/tcharding/minireq/actions/workflows/msrv.yml/badge.svg)
+# bitreq - forked from minreq
+[![Crates.io](https://img.shields.io/crates/d/bitreq.svg)](https://crates.io/crates/bitreq)
+[![Documentation](https://docs.rs/bitreq/badge.svg)](https://docs.rs/bitreq)
+![Unit tests](https://github.com/tcharding/bitreq/actions/workflows/unit-tests.yml/badge.svg)
+![MSRV](https://github.com/tcharding/bitreq/actions/workflows/msrv.yml/badge.svg)
 
 This crate is a fork for the very nice
 [minreq](https://github.com/neonmoe/minreq). I chose to fork and
@@ -29,7 +29,7 @@ their impact on executable size reflects that.
 ## Documentation
 
 Build your own with `cargo doc --all-features`, or browse the online
-documentation at [docs.rs/minireq](https://docs.rs/minireq).
+documentation at [docs.rs/bitreq](https://docs.rs/bitreq).
 
 ## Minimum Supported Rust Version (MSRV)
 

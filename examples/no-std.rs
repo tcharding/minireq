@@ -49,14 +49,14 @@ const RESPONSE: &str = r#"<!doctype html>
 </body>
 </html>"#;
 
-fn main() -> Result<(), minireq::Error> {
+fn main() -> Result<(), bitreq::Error> {
     // TODO: For this request object to be useful we probably need to
     // either make the `Request` fields all public or make the
     // `ParsedRequest` and associated types public.
     //
     // Either option is a reasonably invasive change in design so
     // needs thorough consideration.
-    let request = minireq::get("http://example.com");
+    let request = bitreq::get("http://example.com");
 
     // Do what you need to do to send the request to the server.
     let response = Response::from_bytes(RESPONSE);

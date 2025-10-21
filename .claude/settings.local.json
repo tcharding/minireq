@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(rg:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "WebFetch(domain:crates.io)"
     ],
     "deny": []
   }

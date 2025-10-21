@@ -1,16 +1,16 @@
 [package]
-name = "minireq"
+name = "bitreq"
 version = "0.1.0"
 authors = ["Jens Pitkanen <jens@neon.moe>", "Tobin C. Harding <me@tobin.cc>"]
 description = "Simple, minimal-dependency HTTP client"
-documentation = "https://docs.rs/minireq"
-homepage = "https://github.com/tcharding/minireq"
-repository = "https://github.com/tcharding/minireq"
+documentation = "https://docs.rs/bitreq"
+repository = "https://github.com/rust-bitcoin/corepc"
 readme = "README.md"
 keywords = ["http", "https", "client", "request", "json"]
 categories = ["web-programming::http-client"]
 license = "ISC"
-edition = "2018"
+edition = "2021"
+rust-version = "1.74.0"
 
 [badges]
 maintenance = { status = "experimental" }

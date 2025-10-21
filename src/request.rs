@@ -64,13 +64,13 @@ impl fmt::Display for Method {
 
 /// An HTTP request.
 ///
-/// Generally created by the [`minireq::get`](fn.get.html)-style
+/// Generally created by the [`bitreq::get`](fn.get.html)-style
 /// functions, corresponding to the HTTP method we want to use.
 ///
 /// # Example
 ///
 /// ```
-/// let request = minireq::post("http://example.com");
+/// let request = bitreq::post("http://example.com");
 /// ```
 ///
 /// After creating the request, you would generally call
@@ -245,7 +245,7 @@ impl Request {
     /// Returns `Err` if we run into an error while sending the
     /// request, or receiving/parsing the response. The specific error
     /// is described in the `Err`, and it can be any
-    /// [`minireq::Error`](enum.Error.html) except
+    /// [`bitreq::Error`](enum.Error.html) except
     /// [`SerdeJsonError`](enum.Error.html#variant.SerdeJsonError) and
     /// [`InvalidUtf8InBody`](enum.Error.html#variant.InvalidUtf8InBody).
     #[cfg(any(feature = "std", feature = "wasm"))]

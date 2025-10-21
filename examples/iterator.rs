@@ -1,11 +1,11 @@
 //! This example demonstrates probably the most complicated part of
-//! `minireq`. Useful when making loading bars, for example.
+//! `bitreq`. Useful when making loading bars, for example.
 
 #![cfg(feature = "std")]
 
-fn main() -> Result<(), minireq::Error> {
+fn main() -> Result<(), bitreq::Error> {
     let mut buffer = Vec::new();
-    for byte in minireq::get("http://example.com").send_lazy()? {
+    for byte in bitreq::get("http://example.com").send_lazy()? {
         // The connection could have a problem at any point during the
         // download, so each byte needs to be unwrapped.
         let (byte, len) = byte?;
